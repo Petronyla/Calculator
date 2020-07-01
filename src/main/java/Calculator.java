@@ -9,57 +9,67 @@ public class Calculator {
     private static Map<String, Integer> operators = new HashMap<>();
 
     public static void main(String[] args) {
-        String input = "5 * (   4 +8) + 2";
-        input = input.replaceAll(" ", "");
+        try (Scanner sc = new Scanner(System.in)) {
+            System.out.print("Enter your expression:");
+            String input = sc.nextLine();
+            input = input.replaceAll(" ", "");
 
-        operators.put("+", 1);
-        operators.put("-", 1);
-        operators.put("*", 2);
-        operators.put("/", 2);
-        operators.put("^", 3);
-        operators.put("(", 4);
-        operators.put(")", 4);
+            operators.put("+", 1);
+            operators.put("-", 1);
+            operators.put("*", 2);
+            operators.put("/", 2);
+            operators.put("^", 3);
+            operators.put("(", 4);
+            operators.put(")", 4);
 
-        List<String> list = new ArrayList<>(Arrays.asList(input.split("")));
+            List<String> list = new ArrayList<>(Arrays.asList(input.split("")));
 
-        do {
-            for (int i = 0; list.size() > i; i++) {
-                if (operators.containsKey(list.get(i))) {
-                    stackOp.push(list.get(i));
-                } else {
-                    try {
-                        stackNum.push(parseInt(list.get(i)));
-                    } catch (Exception e) {
-                        System.out.println("Unexpected character.");
-                    }
-                }
-                if (stackOp.size() >= 1 && stackNum.size() >= 2) {
-                    if (stackOp.size() >= 2) {
-                        String lastOp = stackOp.pollFirst();
-                        String secondLastOp = stackOp.pollFirst();
-                        if (lastOp.equals(")")) {
-                            do {
-                                stackNum.push(calculate(secondLastOp));
-                            } while (!stackOp.getFirst().equals("("));
-                            stackOp.pollFirst();
-                        } else if (operators.get(secondLastOp) >= operators.get(lastOp) && !secondLastOp.equals("(")) {
-                            stackNum.push(calculate(secondLastOp));
-                            stackOp.push(lastOp);
-                        } else {
-                            stackOp.push(secondLastOp);
-                            stackOp.push(lastOp);
+            do {
+                for (int i = 0; list.size() > i; i++) {
+                    if (operators.containsKey(list.get(i))) {
+                        stackOp.push(list.get(i));
+                    } else {
+                        try {
+                            stackNum.push(parseInt(list.get(i)));
+                        } catch (Exception e) {
+                            System.out.println("Unexpected character.");
                         }
                     }
-                    if (i == list.size() - 1) {
-                        while (stackOp.size() > 0)
-                            stackNum.push(calculate(stackOp.pollFirst()));
+                    if (stackOp.size() >= 1 && stackNum.size() >= 2) {
+                        if (stackOp.size() >= 2) {
+                            String lastOp = stackOp.pollFirst();
+                            String secondLastOp = stackOp.pollFirst();
+
+                            //calculates the expression in parentheses
+                            if (lastOp.equals(")")) {
+                                do {
+                                    stackNum.push(calculate(secondLastOp));
+                                } while (!stackOp.getFirst().equals("("));
+                                stackOp.pollFirst();
+
+                                //compares the two operators and, if the first operator has the higher priority, performs the
+                                // calculation
+                            } else if (operators.get(secondLastOp) >= operators.get(lastOp) && !secondLastOp.equals("(")) {
+                                stackNum.push(calculate(secondLastOp));
+                                stackOp.push(lastOp);
+
+                                //continues unchanged
+                            } else {
+                                stackOp.push(secondLastOp);
+                                stackOp.push(lastOp);
+                            }
+                        }
+                        if (i == list.size() - 1) {
+                            while (stackOp.size() > 0)
+                                stackNum.push(calculate(stackOp.pollFirst()));
+                        }
                     }
                 }
-            }
-        } while (!(stackOp.size() == 0));
+            } while (!(stackOp.size() == 0));
 
-        System.out.println(stackNum.poll());
-
+            System.out.print("The result is: ");
+            System.out.println(stackNum.poll());
+        }
     }
 
     public static int calculate(String op) {
